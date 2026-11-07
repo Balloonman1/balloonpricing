@@ -117,7 +117,7 @@ export function PricingEditor({ initial }: { initial: ValuationConfig }) {
                       </td>
                       <td>
                         <Button variant="ghost" size="sm" onClick={() => up({ envelopePrices: c.envelopePrices.filter((_, j) => j !== i) })} disabled={c.envelopePrices.length <= 1}>
-                          Remove
+                          <span className="sm:hidden" aria-hidden="true">✕</span><span className="max-sm:sr-only">Remove</span>
                         </Button>
                       </td>
                     </tr>
@@ -150,7 +150,7 @@ export function PricingEditor({ initial }: { initial: ValuationConfig }) {
                       <TextInput value={m.manufacturer} onChange={(e) => up({ manufacturerEnvelopePrices: c.manufacturerEnvelopePrices.map((x, j) => (j === mi ? { ...x, manufacturer: e.target.value } : x)) })} />
                     </Field>
                     <Button variant="ghost" size="sm" onClick={() => up({ manufacturerEnvelopePrices: c.manufacturerEnvelopePrices.filter((_, j) => j !== mi) })}>
-                      Remove
+                      <span className="sm:hidden" aria-hidden="true">✕</span><span className="max-sm:sr-only">Remove</span>
                     </Button>
                   </div>
                   {m.points.map((p, pi) => (
@@ -158,7 +158,7 @@ export function PricingEditor({ initial }: { initial: ValuationConfig }) {
                       <NumberInput aria-label="Volume" value={p.volumeCuFt} onValue={(v) => up({ manufacturerEnvelopePrices: c.manufacturerEnvelopePrices.map((x, j) => (j === mi ? { ...x, points: x.points.map((q, k) => (k === pi ? { ...q, volumeCuFt: v ?? 0 } : q)) } : x)) })} suffix="cu ft" />
                       <MoneyInput cents={p.priceCents} onCents={(v) => up({ manufacturerEnvelopePrices: c.manufacturerEnvelopePrices.map((x, j) => (j === mi ? { ...x, points: x.points.map((q, k) => (k === pi ? { ...q, priceCents: v ?? 0 } : q)) } : x)) })} />
                       <Button variant="ghost" size="sm" onClick={() => up({ manufacturerEnvelopePrices: c.manufacturerEnvelopePrices.map((x, j) => (j === mi ? { ...x, points: x.points.filter((_, k) => k !== pi) } : x)) })}>
-                        Remove
+                        <span className="sm:hidden" aria-hidden="true">✕</span><span className="max-sm:sr-only">Remove</span>
                       </Button>
                     </div>
                   ))}
@@ -302,7 +302,7 @@ export function PricingEditor({ initial }: { initial: ValuationConfig }) {
                           </td>
                           <td>
                             <Button variant="ghost" size="sm" onClick={() => up({ burnerModels: c.burnerModels.filter((_, j) => j !== i) })}>
-                              Remove
+                              <span className="sm:hidden" aria-hidden="true">✕</span><span className="max-sm:sr-only">Remove</span>
                             </Button>
                           </td>
                         </tr>
@@ -342,7 +342,7 @@ export function PricingEditor({ initial }: { initial: ValuationConfig }) {
                           </td>
                           <td>
                             <Button variant="ghost" size="sm" onClick={() => up({ basketModels: c.basketModels.filter((_, j) => j !== i) })}>
-                              Remove
+                              <span className="sm:hidden" aria-hidden="true">✕</span><span className="max-sm:sr-only">Remove</span>
                             </Button>
                           </td>
                         </tr>
@@ -502,7 +502,7 @@ export function PricingEditor({ initial }: { initial: ValuationConfig }) {
                           up({ manufacturerAdjustments: next });
                         }}
                       >
-                        Remove
+                        <span className="sm:hidden" aria-hidden="true">✕</span><span className="max-sm:sr-only">Remove</span>
                       </Button>
                     </div>
                   ))}
@@ -515,7 +515,7 @@ export function PricingEditor({ initial }: { initial: ValuationConfig }) {
       </div>
 
       {/* Save bar */}
-      <div className="sticky bottom-0 z-10 mt-8 border-t border-line bg-ivory/95 py-4 backdrop-blur">
+      <div className="z-10 mt-8 border-t border-line bg-ivory/95 py-4 backdrop-blur sm:sticky sm:bottom-0">
         {preview && (
           <Panel className="mb-4 p-4">
             <p className="text-sm font-medium">Effect on reference cases (active v{preview.activeVersion} → draft)</p>

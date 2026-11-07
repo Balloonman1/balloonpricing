@@ -84,7 +84,7 @@ export function Field({
 }
 
 const inputClass =
-  "w-full rounded-[var(--radius-control)] border border-line bg-paper px-3 py-2.5 text-[0.98rem] text-ink placeholder:text-[#9aa1ab] focus:border-navy-700 focus:outline-none focus:ring-2 focus:ring-navy-700/15 aria-[invalid=true]:border-[#c2410c]";
+  "w-full rounded-[var(--radius-control)] border border-line bg-paper px-3 py-2.5 text-base text-ink placeholder:text-[#9aa1ab] focus:border-navy-700 focus:outline-none focus:ring-2 focus:ring-navy-700/15 aria-[invalid=true]:border-[#c2410c]";
 
 export const TextInput = forwardRef<HTMLInputElement, InputHTMLAttributes<HTMLInputElement>>(function TextInput({ className, ...props }, ref) {
   return <input ref={ref} className={cn(inputClass, className)} {...props} />;
@@ -220,7 +220,10 @@ export function ChoiceGroup<T extends string>({
   legend,
   hint,
   error,
+  compact = false,
 }: {
+  /** Two columns even on phones, for short labels. */
+  compact?: boolean;
   name: string;
   value: T | undefined;
   onChange: (v: T) => void;
@@ -231,7 +234,7 @@ export function ChoiceGroup<T extends string>({
   error?: string;
 }) {
   const id = useId();
-  const cols = { 1: "", 2: "sm:grid-cols-2", 3: "sm:grid-cols-3", 4: "sm:grid-cols-2 lg:grid-cols-4", 5: "sm:grid-cols-3 lg:grid-cols-5" }[columns];
+  const cols = { 1: "", 2: "sm:grid-cols-2", 3: "sm:grid-cols-3", 4: "grid-cols-2 lg:grid-cols-4", 5: "grid-cols-2 sm:grid-cols-3 lg:grid-cols-5" }[columns];
   return (
     <fieldset className="flex flex-col gap-2" aria-describedby={hint ? `${id}-hint` : undefined}>
       <legend className="mb-1.5 text-[0.93rem] font-medium text-ink">{legend}</legend>
@@ -240,7 +243,7 @@ export function ChoiceGroup<T extends string>({
           {hint}
         </p>
       )}
-      <div className={cn("grid grid-cols-1 gap-2", cols)}>
+      <div className={cn("grid gap-2", cols.startsWith("grid-cols-2") || compact ? `grid-cols-2 ${cols}` : `grid-cols-1 ${cols}`)}>
         {choices.map((c) => {
           const checked = value === c.value;
           return (

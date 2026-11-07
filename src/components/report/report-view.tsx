@@ -38,14 +38,14 @@ export function ReportView({ data, actions, banner }: { data: ReportData; action
   const total = r.components.reduce((n, c) => n + c.valueCents, 0);
 
   return (
-    <article className="mx-auto max-w-5xl px-4 pb-10 pt-8 sm:px-6 sm:pt-12">
+    <article className="mx-auto max-w-5xl px-4 pb-10 pt-6 sm:px-6 sm:pt-12">
       {banner}
       <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p className="text-sm text-muted">
             Valuation report <span className="tabular">{data.referenceNumber}</span>
           </p>
-          <h1 className="mt-1 text-3xl sm:text-[2.6rem]">{reportTitle(input)}</h1>
+          <h1 className="mt-1 text-[1.9rem] sm:text-[2.6rem]">{reportTitle(input)}</h1>
           <p className="mt-1.5 text-muted">
             {SCOPE_LABEL[input.scope]}. Valued {date.toLocaleDateString("en-US", { dateStyle: "long" })}.
           </p>
@@ -100,7 +100,6 @@ export function ReportView({ data, actions, banner }: { data: ReportData; action
             Resale policy applied
           </h2>
           {r.legacyMessage && <p className="mt-2">{r.legacyMessage}</p>}
-          {r.brandMessage && r.brandMessage !== r.legacyMessage && <p className="mt-2">{r.brandMessage}</p>}
           <ul className="mt-3 space-y-1.5 text-[0.92rem] text-[#5f4a2a]">
             {r.policies.map((p, i) => (
               <li key={i}>{p.message}</li>
@@ -129,7 +128,7 @@ export function ReportView({ data, actions, banner }: { data: ReportData; action
               <thead>
                 <tr className="text-left text-sm text-muted">
                   <th className="px-3 py-2 font-normal">Component</th>
-                  <th className="px-3 py-2 font-normal">Basis</th>
+                  <th className="hidden px-3 py-2 font-normal sm:table-cell">Basis</th>
                   <th className="px-3 py-2 text-right font-normal">Estimated value</th>
                 </tr>
               </thead>
@@ -139,8 +138,9 @@ export function ReportView({ data, actions, banner }: { data: ReportData; action
                     <td className="px-3 py-3">
                       <span className="flex items-start gap-2.5">
                         <span className="mt-1.5 size-2.5 shrink-0 rounded-sm" style={{ background: COMPONENT_COLOR[c.kind] }} aria-hidden="true" />
-                        <span>
+                        <span className="min-w-0 break-words">
                           {c.label}
+                          <span className="block text-[0.8rem] text-muted sm:hidden">{PROVENANCE_LABEL[c.provenance]}</span>
                           {c.lines && (
                             <span className="mt-1 block space-y-0.5 text-[0.82rem] text-muted">
                               {c.lines.map((l, i) => (
@@ -163,7 +163,7 @@ export function ReportView({ data, actions, banner }: { data: ReportData; action
                         </span>
                       </span>
                     </td>
-                    <td className="px-3 py-3 text-sm text-muted">{PROVENANCE_LABEL[c.provenance]}</td>
+                    <td className="hidden px-3 py-3 text-sm text-muted sm:table-cell">{PROVENANCE_LABEL[c.provenance]}</td>
                     <td className="tabular px-3 py-3 text-right">{formatUsd(c.displayCents)}</td>
                   </tr>
                 ))}
@@ -177,7 +177,8 @@ export function ReportView({ data, actions, banner }: { data: ReportData; action
               </tbody>
               <tfoot>
                 <tr className="border-t-2 border-navy-900">
-                  <td className="px-3 py-3 font-medium" colSpan={2}>
+                  <td className="px-3 py-3 font-medium sm:hidden">Calculated total</td>
+                  <td className="hidden px-3 py-3 font-medium sm:table-cell" colSpan={2}>
                     Calculated total
                     {r.marketAdjustmentFactor !== 1 && <span className="block text-sm font-normal text-muted">Market adjustment ×{r.marketAdjustmentFactor.toFixed(3)} applied</span>}
                   </td>
@@ -185,7 +186,8 @@ export function ReportView({ data, actions, banner }: { data: ReportData; action
                 </tr>
                 {r.policies.length > 0 && (
                   <tr>
-                    <td className="px-3 pb-3 text-sm text-muted" colSpan={2}>
+                    <td className="px-3 pb-3 text-sm text-muted sm:hidden">After resale policy</td>
+                    <td className="hidden px-3 pb-3 text-sm text-muted sm:table-cell" colSpan={2}>
                       After resale policy
                     </td>
                     <td className="tabular px-3 pb-3 text-right font-medium">{formatUsd(r.fairMarketValueCents)}</td>

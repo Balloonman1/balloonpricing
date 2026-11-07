@@ -70,7 +70,7 @@ export function Combobox({
         autoComplete="off"
         placeholder={placeholder}
         value={value}
-        className="w-full rounded-[var(--radius-control)] border border-line bg-paper px-3 py-2.5 text-[0.98rem] text-ink placeholder:text-[#9aa1ab] focus:border-navy-700 focus:outline-none focus:ring-2 focus:ring-navy-700/15"
+        className="w-full rounded-[var(--radius-control)] border border-line bg-paper px-3 py-2.5 text-base text-ink placeholder:text-[#9aa1ab] focus:border-navy-700 focus:outline-none focus:ring-2 focus:ring-navy-700/15"
         onChange={(e) => {
           onChange(e.target.value);
           setOpen(true);

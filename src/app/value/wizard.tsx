@@ -427,13 +427,26 @@ export function Wizard({ editId }: { editId?: string }) {
   }
 
   return (
-    <div className="mx-auto grid max-w-6xl gap-10 px-4 py-10 sm:px-6 lg:grid-cols-[220px_1fr] lg:py-14">
-      {/* Progress rail */}
-      <nav aria-label="Valuation steps" className="lg:sticky lg:top-24 lg:self-start">
-        <p className="mb-3 text-sm text-muted">
+    <div className="mx-auto grid max-w-6xl gap-6 px-4 py-6 sm:px-6 sm:py-10 lg:grid-cols-[220px_1fr] lg:gap-10 lg:py-14">
+      {/* Progress: compact bar on phones, full rail on large screens */}
+      <nav aria-label="Valuation steps" className="min-w-0 lg:sticky lg:top-24 lg:self-start">
+        <div className="lg:hidden">
+          <p className="flex items-baseline justify-between text-sm">
+            <span className="font-medium text-ink">{STEP_LABEL[step]}</span>
+            <span className="tabular text-muted">
+              Step {stepIndex + 1} of {steps.length}
+            </span>
+          </p>
+          <div className="mt-2 flex gap-1" aria-hidden="true">
+            {steps.map((s, i) => (
+              <span key={s} className={cn("h-1.5 flex-1 rounded-full", i < stepIndex ? "bg-navy-900" : i === stepIndex ? "bg-flame" : "bg-line")} />
+            ))}
+          </div>
+        </div>
+        <p className="mb-3 hidden text-sm text-muted lg:block">
           Step {stepIndex + 1} of {steps.length}
         </p>
-        <ol className="flex gap-1.5 overflow-x-auto pb-1 lg:flex-col lg:gap-0 lg:overflow-visible">
+        <ol className="hidden lg:flex lg:flex-col">
           {steps.map((s, i) => {
             const done = i < stepIndex;
             const current = i === stepIndex;
@@ -473,7 +486,7 @@ export function Wizard({ editId }: { editId?: string }) {
           next();
         }}
       >
-        <h1 ref={headingRef} tabIndex={-1} className="scroll-mt-24 text-3xl outline-none sm:text-[2.4rem]">
+        <h1 ref={headingRef} tabIndex={-1} className="scroll-mt-24 text-[1.9rem] outline-none sm:text-[2.4rem]">
           {
             {
               balloon: editId ? "Edit your balloon" : "Tell us about the balloon",
@@ -500,7 +513,7 @@ export function Wizard({ editId }: { editId?: string }) {
           }
         </p>
 
-        <Panel className="mt-8 p-5 sm:p-8">
+        <Panel className="mt-6 p-4 sm:mt-8 sm:p-8">
           <div className="flex flex-col gap-7">
             {step === "balloon" && (
               <>
@@ -676,6 +689,7 @@ export function Wizard({ editId }: { editId?: string }) {
 
                 <ChoiceGroup
                   name="branding"
+                          compact
                   legend="Heavy commercial branding"
                   value={draft.envelope.heavyBranding ? "yes" : "no"}
                   onChange={(v) => setEnv({ heavyBranding: v === "yes" })}
@@ -803,6 +817,7 @@ export function Wizard({ editId }: { editId?: string }) {
                         </div>
                         <ChoiceGroup
                           name="bConstruction"
+                          compact
                           legend="Construction"
                           value={draft.basket.construction}
                           onChange={(v) => setBasket({ construction: v })}
@@ -812,7 +827,8 @@ export function Wizard({ editId }: { editId?: string }) {
                             { value: "lightweight", label: "Lightweight" },
                           ]}
                         />
-                        <ChoiceGroup name="bCondition" legend="Basket condition" value={draft.basket.condition} onChange={(v) => setBasket({ condition: v })} columns={3} choices={HW_CONDITION_CHOICES} />
+                        <ChoiceGroup name="bCondition"
+                          compact legend="Basket condition" value={draft.basket.condition} onChange={(v) => setBasket({ condition: v })} columns={3} choices={HW_CONDITION_CHOICES} />
                         <div className="grid gap-5 sm:grid-cols-2">
                           <Field label="Known resale value" htmlFor="bKnown" optional hint="If you know what this basket sells for used, it is used as is.">
                             <MoneyInput id="bKnown" cents={draft.basket.knownResaleCents} onCents={(c) => setBasket({ knownResaleCents: c })} />
@@ -880,6 +896,7 @@ export function Wizard({ editId }: { editId?: string }) {
                     <div className="grid gap-7 lg:grid-cols-2">
                       <ChoiceGroup
                         name="brConfig"
+                          compact
                         legend="Configuration"
                         value={draft.burner.configuration}
                         onChange={(v) => setBurner({ configuration: v })}
@@ -892,6 +909,7 @@ export function Wizard({ editId }: { editId?: string }) {
                       />
                       <ChoiceGroup
                         name="brGlow"
+                          compact
                         legend="Glow capability"
                         value={draft.burner.glow}
                         onChange={(v) => {
@@ -915,7 +933,8 @@ export function Wizard({ editId }: { editId?: string }) {
                         <NumberInput id="brYear" grouping={false} value={draft.burner.year} onValue={(v) => setBurner({ year: v })} placeholder="e.g. 2010" invalid={Boolean(errors.burnerYear)} />
                       </div>
                     </Field>
-                    <ChoiceGroup name="brCondition" legend="Burner condition" value={draft.burner.condition} onChange={(v) => setBurner({ condition: v })} columns={3} choices={HW_CONDITION_CHOICES} />
+                    <ChoiceGroup name="brCondition"
+                          compact legend="Burner condition" value={draft.burner.condition} onChange={(v) => setBurner({ condition: v })} columns={3} choices={HW_CONDITION_CHOICES} />
                     <Field label="Known resale value" htmlFor="brKnown" optional hint="A known used-market value is used directly and not depreciated again.">
                       <div className="max-w-xs">
                         <MoneyInput id="brKnown" cents={draft.burner.knownResaleCents} onCents={(c) => setBurner({ knownResaleCents: c })} />
@@ -991,11 +1010,11 @@ export function Wizard({ editId }: { editId?: string }) {
           </p>
         )}
 
-        <div className="mt-6 flex items-center justify-between gap-3">
-          <Button type="button" variant="ghost" onClick={() => go(stepIndex - 1)} disabled={stepIndex === 0}>
+        <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <Button type="button" variant="ghost" onClick={() => go(stepIndex - 1)} disabled={stepIndex === 0} className={stepIndex === 0 ? "max-sm:hidden" : undefined}>
             Back
           </Button>
-          <div className="flex items-center gap-3">
+          <div className="flex flex-col-reverse gap-3 sm:flex-row sm:items-center">
             {!editId && stepIndex === 0 && (
               <Button
                 type="button"
@@ -1008,7 +1027,7 @@ export function Wizard({ editId }: { editId?: string }) {
                 Clear form
               </Button>
             )}
-            <Button type="submit" variant={isLast ? "flame" : "primary"} size="lg" disabled={submitting}>
+            <Button type="submit" variant={isLast ? "flame" : "primary"} size="lg" disabled={submitting} className="w-full sm:w-auto">
               {isLast ? (submitting ? "Calculating…" : editId ? "Recalculate value" : "Calculate value") : `Continue to ${STEP_LABEL[steps[stepIndex + 1]].toLowerCase()}`}
             </Button>
           </div>
@@ -1022,6 +1041,7 @@ function IncludeToggle({ name, label, value, onChange }: { name: string; label: 
   return (
     <ChoiceGroup
       name={name}
+      compact
       legend={label}
       value={value ? "yes" : "no"}
       onChange={(v) => onChange(v === "yes")}
