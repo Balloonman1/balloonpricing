@@ -8,6 +8,8 @@ import { formatUsd } from "@/lib/engine/math";
 
 export function DeviceList() {
   const [items, setItems] = useState<LocalValuation[] | null>(null);
+  // Browser storage is only readable after mount.
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => setItems(listLocalValuations()), []);
 
   async function remove(v: LocalValuation) {

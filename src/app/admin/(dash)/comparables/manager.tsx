@@ -208,6 +208,8 @@ export function ComparablesManager({ initial, burners }: { initial: SaleComparab
             Import CSV
             <input type="file" accept=".csv,text/csv" className="sr-only" onChange={(e) => e.target.files?.[0] && importCsv(e.target.files[0])} disabled={busy} />
           </label>
+          {/* File download from an API route, not page navigation. */}
+          {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
           <a href="/api/admin/comparables/export" className="inline-flex items-center rounded-[var(--radius-control)] px-4 py-2.5 text-[0.95rem] font-medium hover:bg-ivory-deep">
             Export CSV
           </a>

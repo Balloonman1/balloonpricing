@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { forwardRef, useEffect, useId, useState, type ButtonHTMLAttributes, type InputHTMLAttributes, type ReactNode, type SelectHTMLAttributes } from "react";
+import { forwardRef, useId, useState, type ButtonHTMLAttributes, type InputHTMLAttributes, type ReactNode, type SelectHTMLAttributes } from "react";
 import { cn } from "@/lib/cn";
 
 type Variant = "primary" | "secondary" | "ghost" | "flame" | "danger";
@@ -122,11 +122,12 @@ export function NumberInput({
 } & Omit<InputHTMLAttributes<HTMLInputElement>, "value" | "onChange">) {
   const format = (v: number | undefined) => (v === undefined ? "" : decimals ? String(v) : v.toLocaleString("en-US"));
   const [text, setText] = useState(format(value));
-  useEffect(() => {
-    const parsed = parse(text);
-    if (parsed !== value) setText(format(value));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [value]);
+  const [seen, setSeen] = useState(value);
+  if (value !== seen) {
+    // External value changed (e.g. a model pick filled the volume): resync the text.
+    setSeen(value);
+    if (parse(text) !== value) setText(format(value));
+  }
   function parse(t: string): number | undefined {
     const clean = t.replace(/[,\s$]/g, "");
     if (clean === "") return undefined;
@@ -169,11 +170,11 @@ export function MoneyInput({
 }) {
   const fmt = (c: number | undefined) => (c === undefined ? "" : (c / 100).toLocaleString("en-US", { maximumFractionDigits: 2 }));
   const [text, setText] = useState(fmt(cents));
-  useEffect(() => {
-    const parsed = parse(text);
-    if (parsed !== cents) setText(fmt(cents));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [cents]);
+  const [seen, setSeen] = useState(cents);
+  if (cents !== seen) {
+    setSeen(cents);
+    if (parse(text) !== cents) setText(fmt(cents));
+  }
   function parse(t: string): number | undefined {
     const clean = t.replace(/[,\s$]/g, "");
     if (clean === "") return undefined;
