@@ -22,7 +22,7 @@ interface DemoData {
 const g = globalThis as unknown as { __bluebookDemo?: DemoData };
 
 function dataFile(): string {
-  const dir = process.env.DEMO_DATA_DIR || (process.env.VERCEL ? "/tmp/balloon-bluebook" : path.join(process.cwd(), ".data"));
+  const dir = process.env.DEMO_DATA_DIR || (process.env.NETLIFY || process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME ? "/tmp/balloon-bluebook" : path.join(process.cwd(), ".data"));
   return path.join(dir, "demo-db.json");
 }
 

@@ -1,0 +1,2 @@
+export const DISCLAIMER =
+  "Balloon Bluebook provides estimated resale values based on expert pricing assumptions and the information supplied. Estimates are not certified appraisals, guarantees of selling price, aircraft inspections, or airworthiness determinations. Actual values depend on market conditions, equipment condition, and buyer demand. Aircraft airworthiness and operational suitability must be determined through appropriate inspections and applicable regulatory requirements.";
