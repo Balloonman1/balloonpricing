@@ -95,15 +95,17 @@ const ageBucket = (year?: number, sold?: string) => {
 const volumeBucket = (v?: number) => (!v ? "Unknown" : v < 77000 ? "Under 77K" : v <= 90000 ? "77K-90K" : v <= 120000 ? "91K-120K" : "Over 120K");
 const hoursBucket = (h?: number) => (h === undefined ? "Unknown" : h < 200 ? "Under 200 h" : h < 400 ? "200-399 h" : "400+ h");
 
+const label = (s?: string) => (s ? (s.charAt(0).toUpperCase() + s.slice(1)).replace(/_/g, " ") : "Unknown");
+
 export function accuracyBreakdown(predictions: ComparablePrediction[]): AccuracyGroup[] {
   const dims: Record<string, (p: ComparablePrediction) => string> = {
     Manufacturer: (p) => p.comparable.manufacturer || "Unknown",
     Age: (p) => ageBucket(p.comparable.valuationInput?.year ?? p.comparable.year, p.comparable.dateSold),
     Volume: (p) => volumeBucket(p.comparable.valuationInput?.volumeCuFt ?? p.comparable.volumeCuFt),
-    Type: (p) => p.comparable.valuationInput?.category ?? "Unknown",
+    Type: (p) => label(p.comparable.valuationInput?.category),
     Hours: (p) => hoursBucket(p.comparable.valuationInput?.hours ?? p.comparable.hours),
-    Fabric: (p) => p.comparable.valuationInput?.envelope?.fabric ?? p.comparable.fabric ?? "Unknown",
-    Configuration: (p) => p.comparable.valuationInput?.scope ?? "Unknown",
+    Fabric: (p) => label(p.comparable.valuationInput?.envelope?.fabric ?? p.comparable.fabric),
+    Configuration: (p) => label(p.comparable.valuationInput?.scope),
   };
   const groups: AccuracyGroup[] = [];
   for (const [dimension, keyOf] of Object.entries(dims)) {
