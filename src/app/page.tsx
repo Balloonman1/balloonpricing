@@ -5,7 +5,7 @@ import Link from "next/link";
 import { ValueAltimeter } from "@/components/report/gauges";
 import { ButtonLink } from "@/components/ui";
 import { CATALOG } from "@/lib/catalog";
-import { getRepository } from "@/lib/data";
+import { getActiveConfigSafe } from "@/lib/data";
 import { formatUsd } from "@/lib/engine/math";
 import type { ValuationInput } from "@/lib/engine/types";
 import { valuate } from "@/lib/engine/valuate";
@@ -39,7 +39,7 @@ const STEPS = [
 ];
 
 export default async function Home() {
-  const config = await getRepository().getActiveConfig();
+  const config = await getActiveConfigSafe();
   const sample = valuate(SAMPLE, config.snapshot);
   const hasPhoto = existsSync(path.join(process.cwd(), "public", "hero.jpg"));
   const modelCount = CATALOG.manufacturers.reduce((n, m) => n + m.models.length, 0);

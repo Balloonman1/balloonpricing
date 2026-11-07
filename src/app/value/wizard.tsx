@@ -5,7 +5,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Button, CheckTile, ChoiceGroup, Field, MoneyInput, NumberInput, Panel, Select, TextInput } from "@/components/ui";
 import { Combobox, type ComboOption } from "@/components/ui/combobox";
 import { modelsFor, MORE_MANUFACTURERS, PRIMARY_MANUFACTURERS } from "@/lib/catalog";
-import { clearDraft, getLocalValuation, loadDraft, saveDraft, saveLocalValuation, titleFor } from "@/lib/client/storage";
+import { clearDraft, getLocalValuation, loadDraft, saveDraft, saveLocalValuation, saveValuationCopy, getValuationCopy, titleFor } from "@/lib/client/storage";
 import { COMMON_VOLUMES } from "@/lib/engine/defaults";
 import { formatUsd } from "@/lib/engine/math";
 import type {
@@ -227,6 +227,9 @@ export function Wizard({ editId }: { editId?: string }) {
         if (res.ok && !cancelled) {
           const { valuation } = await res.json();
           setDraft(fromInput(valuation.input));
+        } else if (!cancelled) {
+          const copy = getValuationCopy<{ input: ValuationInput }>(editId);
+          if (copy) setDraft(fromInput(copy.input));
         }
       } else {
         const saved = loadDraft<{ draft: Draft; stepIndex: number }>();
@@ -326,6 +329,7 @@ export function Wizard({ editId }: { editId?: string }) {
         fairMarketValueCents: v.result.fairMarketValueCents,
         createdAt: v.createdAt,
       });
+      saveValuationCopy(v.id, v);
       if (!editId) clearDraft();
       router.push(`/valuation/${v.id}`);
     } catch {

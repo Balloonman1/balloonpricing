@@ -61,7 +61,7 @@ export interface ValuationStats {
 }
 
 export interface Repository {
-  mode: "supabase" | "demo";
+  mode: "supabase" | "netlify-blobs" | "demo";
   getActiveConfig(): Promise<ConfigRecord>;
   getConfigByVersion(version: number): Promise<ConfigRecord | null>;
   listConfigs(): Promise<ConfigRecord[]>;

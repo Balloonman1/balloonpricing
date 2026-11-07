@@ -8,7 +8,7 @@ import { downloadPdf } from "@/components/report/pdf";
 import { summaryText } from "@/components/report/labels";
 import { ReportView, type ReportData } from "@/components/report/report-view";
 import { Button, ButtonLink, Panel } from "@/components/ui";
-import { getLocalValuation, removeLocalValuation, saveLocalValuation, titleFor } from "@/lib/client/storage";
+import { getLocalValuation, getValuationCopy, removeLocalValuation, saveLocalValuation, saveValuationCopy, titleFor } from "@/lib/client/storage";
 import type { PublicValuation } from "@/lib/services/valuations";
 
 export function OwnerReport({ id, authEnabled, signedIn }: { id: string; authEnabled: boolean; signedIn: boolean }) {
@@ -18,6 +18,7 @@ export function OwnerReport({ id, authEnabled, signedIn }: { id: string; authEna
   const [copied, setCopied] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+  const [offline, setOffline] = useState(false);
 
   const headers = useCallback((): Record<string, string> => {
     const local = getLocalValuation(id);
@@ -27,12 +28,21 @@ export function OwnerReport({ id, authEnabled, signedIn }: { id: string; authEna
   useEffect(() => {
     fetch(`/api/valuations/${id}`, { headers: headers() })
       .then(async (res) => {
-        if (!res.ok) return setState("missing");
+        if (!res.ok) throw new Error("not found");
         const body = await res.json();
         setV(body.valuation);
+        saveValuationCopy(id, body.valuation);
         setState("ready");
       })
-      .catch(() => setState("missing"));
+      .catch(() => {
+        // Fall back to the copy saved in this browser when the server record is unavailable.
+        const copy = getValuationCopy<PublicValuation>(id);
+        if (copy) {
+          setV(copy);
+          setOffline(true);
+          setState("ready");
+        } else setState("missing");
+      });
   }, [id, headers]);
 
   const shareUrl = v?.shareId ? `${window.location.origin}/r/${v.shareId}` : null;
@@ -106,7 +116,13 @@ export function OwnerReport({ id, authEnabled, signedIn }: { id: string; authEna
         <Panel className="no-print mb-6 flex flex-col gap-3 bg-paper p-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="text-[0.92rem]">
             <span className="font-medium">This report is private.</span>{" "}
-            <span className="text-muted">{v.isShared ? "Sharing is on." : "Only you can see it until you create a share link."}</span>
+            <span className="text-muted">
+              {offline
+                ? "Showing the copy saved in this browser. Sharing needs the saved server record."
+                : v.isShared
+                  ? "Sharing is on."
+                  : "Only you can see it until you create a share link."}
+            </span>
           </div>
           <div className="flex flex-wrap items-center gap-2">
             {v.isShared && shareUrl ? (

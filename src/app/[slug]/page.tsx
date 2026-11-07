@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { ButtonLink, Panel } from "@/components/ui";
 import { GUIDE_BY_SLUG, GUIDES } from "@/content/guides";
 import { modelsFor } from "@/lib/catalog";
-import { getRepository } from "@/lib/data";
+import { getActiveConfigSafe } from "@/lib/data";
 import { siteUrl } from "@/lib/env";
 
 export const dynamicParams = false;
@@ -25,7 +25,7 @@ export default async function GuidePage({ params }: { params: Promise<{ slug: st
   const { slug } = await params;
   const g = GUIDE_BY_SLUG[slug];
   if (!g) notFound();
-  const config = (await getRepository().getActiveConfig()).snapshot;
+  const config = (await getActiveConfigSafe()).snapshot;
   const models = g.manufacturer ? modelsFor(g.manufacturer).slice(0, 12) : [];
 
   const ld: object[] = [

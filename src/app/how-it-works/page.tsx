@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ButtonLink } from "@/components/ui";
 import { CATALOG } from "@/lib/catalog";
-import { getRepository } from "@/lib/data";
+import { getActiveConfigSafe } from "@/lib/data";
 import { formatUsd, pct } from "@/lib/engine/math";
 
 export const revalidate = 3600;
@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 };
 
 export default async function HowItWorks() {
-  const active = await getRepository().getActiveConfig();
+  const active = await getActiveConfigSafe();
   const c = active.snapshot;
   const firefly = c.brandPolicies.find((p) => p.manufacturer === "Firefly" && p.active);
   return (

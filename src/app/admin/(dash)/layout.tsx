@@ -32,7 +32,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         <div className="flex items-center gap-4 text-sm text-muted">
           <span>
             Active pricing v{active.version}
-            {repo.mode === "demo" && " · demo storage"}
+            {repo.mode === "demo" ? " · demo storage" : repo.mode === "netlify-blobs" ? " · Netlify Blobs storage" : ""}
           </span>
           <form action="/api/admin/logout" method="post">
             <button className="text-flame-deep underline underline-offset-4">Sign out</button>

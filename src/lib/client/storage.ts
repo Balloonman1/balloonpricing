@@ -50,6 +50,7 @@ export function saveLocalValuation(v: LocalValuation) {
 
 export function removeLocalValuation(id: string) {
   write(local(), LIST_KEY, listLocalValuations().filter((x) => x.id !== id));
+  removeValuationCopy(id);
 }
 
 export function saveDraft(draft: unknown) {
@@ -70,4 +71,25 @@ export function titleFor(input: ValuationInput): string {
   const name = [input.year, input.manufacturer === "Other" ? "" : input.manufacturer, input.model].filter(Boolean).join(" ");
   const scope = { envelope_only: "envelope", complete_system: "complete system", basket_burner: "basket and burner", components: "equipment" }[input.scope];
   return `${name || "Balloon"} ${scope}`.trim();
+}
+
+const COPY_KEY = "bb:copies";
+
+/** Full copy of recent valuations so a report still opens if server storage is unavailable. */
+export function saveValuationCopy(id: string, valuation: unknown) {
+  const copies = read<Record<string, { at: number; v: unknown }>>(local(), COPY_KEY, {});
+  copies[id] = { at: Date.now(), v: valuation };
+  const trimmed = Object.fromEntries(Object.entries(copies).sort((a, b) => b[1].at - a[1].at).slice(0, 20));
+  write(local(), COPY_KEY, trimmed);
+}
+
+export function getValuationCopy<T>(id: string): T | null {
+  const copies = read<Record<string, { at: number; v: T }>>(local(), COPY_KEY, {});
+  return copies[id]?.v ?? null;
+}
+
+export function removeValuationCopy(id: string) {
+  const copies = read<Record<string, unknown>>(local(), COPY_KEY, {});
+  delete copies[id];
+  write(local(), COPY_KEY, copies);
 }

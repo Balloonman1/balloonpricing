@@ -13,6 +13,11 @@ export default async function AdminOverview() {
   return (
     <div>
       <h1 className="text-3xl">Overview</h1>
+      {repo.mode === "netlify-blobs" && (
+        <p className="mt-3 max-w-3xl rounded-md bg-sage-soft px-4 py-3 text-sm text-sage">
+          Data is stored in Netlify Blobs for this site. It persists across deploys. Add Supabase later for user accounts and SQL reporting.
+        </p>
+      )}
       {repo.mode === "demo" && (
         <p className="mt-3 max-w-3xl rounded-md bg-gold-soft px-4 py-3 text-sm text-[#5f4a2a]">
           Demo storage is active because Supabase is not configured. Data is kept on this server only and can be lost on redeploy. Add the Supabase environment variables to persist pricing
