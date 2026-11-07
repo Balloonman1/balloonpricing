@@ -265,7 +265,7 @@ export function ComparablesManager({ initial, burners }: { initial: SaleComparab
               <NumberInput value={form.volumeCuFt} onValue={(v) => set("volumeCuFt", v)} suffix="cu ft" />
             </Field>
             <Field label="Envelope year">
-              <NumberInput value={form.year} onValue={(v) => set("year", v)} />
+              <NumberInput grouping={false} value={form.year} onValue={(v) => set("year", v)} />
             </Field>
             <Field label="Envelope hours">
               <NumberInput decimals value={form.hours} onValue={(v) => set("hours", v)} suffix="h" />
@@ -291,7 +291,7 @@ export function ComparablesManager({ initial, burners }: { initial: SaleComparab
               <TextInput value={form.basket} onChange={(e) => set("basket", e.target.value)} />
             </Field>
             <Field label="Basket year" optional>
-              <NumberInput value={form.basketYear} onValue={(v) => set("basketYear", v)} />
+              <NumberInput grouping={false} value={form.basketYear} onValue={(v) => set("basketYear", v)} />
             </Field>
             <Field label="Burner (reference list)" optional>
               <Select value={form.burnerModelId} onChange={(e) => set("burnerModelId", e.target.value)}>
@@ -315,7 +315,7 @@ export function ComparablesManager({ initial, burners }: { initial: SaleComparab
               </Select>
             </Field>
             <Field label="Burner year" optional>
-              <NumberInput value={form.burnerYear} onValue={(v) => set("burnerYear", v)} />
+              <NumberInput grouping={false} value={form.burnerYear} onValue={(v) => set("burnerYear", v)} />
             </Field>
             <Field label="Tank material">
               <Select value={form.tankMaterial} onChange={(e) => set("tankMaterial", e.target.value as TankMaterial | "")}>

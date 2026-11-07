@@ -341,11 +341,22 @@ export function Wizard({ editId }: { editId?: string }) {
       current = { ...draft, volumeCuFt: Math.round(draft.volumeCuFt * 1000) };
       setDraft(current);
     }
+    setServerError(null);
     const e = validate(step, current);
     setErrors(e);
     if (Object.keys(e).length) return;
-    if (isLast) void submit();
-    else go(stepIndex + 1);
+    if (!isLast) return go(stepIndex + 1);
+    // Before calculating, re-check every step. A draft restored from an earlier visit may skip steps.
+    for (let i = 0; i < steps.length; i++) {
+      const errs = validate(steps[i], current);
+      if (Object.keys(errs).length) {
+        go(i);
+        requestAnimationFrame(() => setErrors(errs));
+        setServerError(`Check the ${STEP_LABEL[steps[i]].toLowerCase()} step before calculating.`);
+        return;
+      }
+    }
+    void submit();
   }
 
   async function submit() {
@@ -581,7 +592,7 @@ export function Wizard({ editId }: { editId?: string }) {
                         <NumberInput id="volume" value={draft.volumeCuFt} onValue={(v) => set("volumeCuFt", v)} suffix="cu ft" invalid={Boolean(errors.volumeCuFt)} />
                       </Field>
                       <Field label="Year manufactured" htmlFor="year" error={errors.year}>
-                        <NumberInput id="year" value={draft.year} onValue={(v) => set("year", v)} placeholder="e.g. 2012" maxLength={4} invalid={Boolean(errors.year)} />
+                        <NumberInput id="year" grouping={false} value={draft.year} onValue={(v) => set("year", v)} placeholder="e.g. 2012" maxLength={4} invalid={Boolean(errors.year)} />
                       </Field>
                       <Field label="Total envelope hours" htmlFor="hours" error={errors.hours}>
                         <NumberInput id="hours" decimals value={draft.hours} onValue={(v) => set("hours", v)} suffix="hours" invalid={Boolean(errors.hours)} />
@@ -772,7 +783,7 @@ export function Wizard({ editId }: { editId?: string }) {
                             />
                           </Field>
                           <Field label="Year manufactured" htmlFor="bYear" error={errors.basketYear} hint="If unknown, the envelope year is used and the report says so.">
-                            <NumberInput id="bYear" value={draft.basket.year} onValue={(v) => setBasket({ year: v })} placeholder="e.g. 2012" invalid={Boolean(errors.basketYear)} />
+                            <NumberInput id="bYear" grouping={false} value={draft.basket.year} onValue={(v) => setBasket({ year: v })} placeholder="e.g. 2012" invalid={Boolean(errors.basketYear)} />
                           </Field>
                           <Field label="Dimensions" htmlFor="bDim" optional>
                             <TextInput id="bDim" placeholder="e.g. 42 × 52 in" value={draft.basket.dimensions ?? ""} onChange={(e) => setBasket({ dimensions: e.target.value })} />
@@ -889,7 +900,7 @@ export function Wizard({ editId }: { editId?: string }) {
                     </div>
                     <Field label="Year manufactured" htmlFor="brYear" error={errors.burnerYear} hint="Used only when no reference price exists for this burner.">
                       <div className="max-w-[12rem]">
-                        <NumberInput id="brYear" value={draft.burner.year} onValue={(v) => setBurner({ year: v })} placeholder="e.g. 2010" invalid={Boolean(errors.burnerYear)} />
+                        <NumberInput id="brYear" grouping={false} value={draft.burner.year} onValue={(v) => setBurner({ year: v })} placeholder="e.g. 2010" invalid={Boolean(errors.burnerYear)} />
                       </div>
                     </Field>
                     <ChoiceGroup name="brCondition" legend="Burner condition" value={draft.burner.condition} onChange={(v) => setBurner({ condition: v })} columns={3} choices={HW_CONDITION_CHOICES} />
@@ -962,7 +973,7 @@ export function Wizard({ editId }: { editId?: string }) {
             {serverError}
           </p>
         )}
-        {Object.keys(errors).length > 0 && (
+        {Object.keys(errors).length > 0 && !serverError && (
           <p role="alert" className="mt-4 text-sm text-[#9a3412]">
             Check the highlighted fields above.
           </p>

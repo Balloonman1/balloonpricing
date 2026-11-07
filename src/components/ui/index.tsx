@@ -108,6 +108,7 @@ export function NumberInput({
   value,
   onValue,
   decimals = false,
+  grouping = true,
   suffix,
   id,
   invalid,
@@ -116,11 +117,13 @@ export function NumberInput({
   value: number | undefined;
   onValue: (v: number | undefined) => void;
   decimals?: boolean;
+  /** Thousands separators. Off for years. */
+  grouping?: boolean;
   suffix?: string;
   id?: string;
   invalid?: boolean;
 } & Omit<InputHTMLAttributes<HTMLInputElement>, "value" | "onChange">) {
-  const format = (v: number | undefined) => (v === undefined ? "" : decimals ? String(v) : v.toLocaleString("en-US"));
+  const format = (v: number | undefined) => (v === undefined ? "" : decimals || !grouping ? String(v) : v.toLocaleString("en-US"));
   const [text, setText] = useState(format(value));
   const [seen, setSeen] = useState(value);
   if (value !== seen) {
