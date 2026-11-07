@@ -190,6 +190,8 @@ export interface FeatureRef {
 export interface BrandPolicy {
   id: string;
   manufacturer: string;
+  /** Other names for the same company, e.g. Balloon Works for Firefly. */
+  aliases?: string[];
   kind: "cap" | "zero";
   maxValueCents?: number;
   typicalMinCents?: number;
@@ -241,6 +243,8 @@ export interface ValuationConfig {
   confidenceRanges: Record<ConfidenceLevel, number>;
   minVerifiedComparablesForHigh: number;
   rounding: { componentCents: number; totalCents: number; listingCents: number };
+  /** Keys of built-in reference updates already applied to this configuration. */
+  defaultsApplied?: string[];
 }
 
 /* ----------------------------------------------------------------------------

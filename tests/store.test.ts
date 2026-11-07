@@ -83,3 +83,18 @@ describe("comparables", () => {
     expect(supportingComparables(caseA, comps)).toBe(1);
   });
 });
+
+describe("automatic reference updates on stored pricing", () => {
+  it("creates a new version when stored pricing predates an update", async () => {
+    const { withDefaultsUpgrades } = await import("@/lib/data/upgrade-wrapper");
+    const wrapped = withDefaultsUpgrades(repo);
+    const { version: _v, defaultsApplied: _d, ...old } = DEFAULT_CONFIG;
+    void _v;
+    void _d;
+    await repo.createConfigVersion({ ...old, basketModels: old.basketModels.filter((b) => b.manufacturer !== "Firefly") }, { label: "old" });
+    const active = await wrapped.getActiveConfig();
+    expect(active.version).toBe(3);
+    expect(active.snapshot.basketModels.filter((b) => b.manufacturer === "Firefly")).toHaveLength(8);
+    expect((await wrapped.getActiveConfig()).version).toBe(3);
+  });
+});

@@ -234,6 +234,7 @@ const CONDITION_CHOICES: { value: ConditionChoice; label: string; description: s
 const HW_CONDITION_CHOICES = CONDITION_CHOICES.map((c) => ({ ...c, description: c.value === "unknown" ? c.description : undefined }));
 
 const TANK_MAKERS = ["Worthington", "Prince", "Cameron", "Other"];
+const FIREFLY_FAMILY = ["Firefly", "Balloon Works"];
 
 export function Wizard({ editId }: { editId?: string }) {
   const router = useRouter();
@@ -417,7 +418,8 @@ export function Wizard({ editId }: { editId?: string }) {
     [manufacturerModels],
   );
 
-  const burnerOptions = ref?.burnerModels ?? [];
+  const burnerBrand = FIREFLY_FAMILY.includes(draft.manufacturer) ? "Firefly" : draft.manufacturer;
+  const burnerOptions = [...(ref?.burnerModels ?? [])].sort((a, b) => Number(b.manufacturer === burnerBrand) - Number(a.manufacturer === burnerBrand));
   const basketOptions = ref?.basketModels ?? [];
 
   if (!hydrated) {
@@ -524,7 +526,17 @@ export function Wizard({ editId }: { editId?: string }) {
                       id="manufacturer"
                       value={draft.manufacturer}
                       aria-invalid={Boolean(errors.manufacturer) || undefined}
-                      onChange={(e) => setDraft((d) => ({ ...d, manufacturer: e.target.value, model: "" }))}
+                      onChange={(e) => {
+                        const manufacturer = e.target.value;
+                        const firefly = FIREFLY_FAMILY.includes(manufacturer);
+                        setDraft((d) => ({
+                          ...d,
+                          manufacturer,
+                          model: "",
+                          // Firefly and Balloon Works envelopes are usually flown with Firefly baskets and burners.
+                          basket: firefly && !d.basket.manufacturer ? { ...d.basket, manufacturer: "Firefly" } : d.basket,
+                        }));
+                      }}
                     >
                       <option value="">Choose…</option>
                       <optgroup label="Common manufacturers">

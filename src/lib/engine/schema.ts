@@ -160,6 +160,7 @@ export const configSchema = z.object({
       z.object({
         id: z.string().min(1).max(80),
         manufacturer: z.string().min(1).max(80),
+        aliases: z.array(z.string().min(1).max(80)).max(20).optional(),
         kind: z.enum(["cap", "zero"]),
         maxValueCents: cents.optional(),
         typicalMinCents: cents.optional(),
@@ -181,4 +182,5 @@ export const configSchema = z.object({
   confidenceRanges: z.object({ high: fraction, moderate: fraction, low: fraction }),
   minVerifiedComparablesForHigh: z.number().int().min(1),
   rounding: z.object({ componentCents: cents, totalCents: cents, listingCents: cents }),
+  defaultsApplied: z.array(z.string().max(80)).max(200).optional(),
 });

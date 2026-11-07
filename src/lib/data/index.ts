@@ -5,6 +5,7 @@ import { getServiceClient } from "@/lib/supabase/admin";
 import { blobsRepository } from "./blobs-store";
 import { demoRepository } from "./demo-store";
 import { createSupabaseRepository } from "./supabase-store";
+import { withDefaultsUpgrades } from "./upgrade-wrapper";
 import type { ConfigRecord, Repository } from "./types";
 
 let repo: Repository | null = null;
@@ -23,9 +24,11 @@ function onNetlify(): boolean {
  */
 export function getRepository(): Repository {
   if (!repo) {
-    if (isSupabaseConfigured()) repo = createSupabaseRepository(getServiceClient());
-    else if (onNetlify() && !isBuild()) repo = blobsRepository;
-    else repo = demoRepository;
+    let base: Repository;
+    if (isSupabaseConfigured()) base = createSupabaseRepository(getServiceClient());
+    else if (onNetlify() && !isBuild()) base = blobsRepository;
+    else base = demoRepository;
+    repo = withDefaultsUpgrades(base);
   }
   return repo;
 }

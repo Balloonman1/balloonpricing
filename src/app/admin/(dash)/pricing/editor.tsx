@@ -441,6 +441,19 @@ export function PricingEditor({ initial }: { initial: ValuationConfig }) {
                           </Field>
                         </div>
                       )}
+                      <Field label="Also applies to" optional hint="Other names for the same company, separated by commas" className="mt-3">
+                        <TextInput
+                          defaultValue={(p.aliases ?? []).join(", ")}
+                          onBlur={(e) =>
+                            set({
+                              aliases: e.target.value
+                                .split(",")
+                                .map((x) => x.trim())
+                                .filter(Boolean),
+                            })
+                          }
+                        />
+                      </Field>
                       <Field label="Message shown on reports" className="mt-3">
                         <TextInput value={p.message ?? ""} onChange={(e) => set({ message: e.target.value })} />
                       </Field>

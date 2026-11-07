@@ -1,4 +1,68 @@
-import type { ValuationConfig } from "./types";
+import type { BasketModelRef, BurnerModelRef, ValuationConfig } from "./types";
+
+/**
+ * Built-in reference updates. Each runs once per configuration: when a stored
+ * configuration predates an update, the update is applied as a new pricing version,
+ * and recorded in defaultsApplied so an administrator's later edits or deletions stick.
+ * Updates only add reference entries; they never set or change prices.
+ */
+export interface DefaultsUpgrade {
+  key: string;
+  label: string;
+  apply: (c: ValuationConfig) => ValuationConfig;
+}
+
+export const FIREFLY_ALIASES = ["Balloon Works", "The Balloon Works", "Firefly/Balloon Works"];
+
+export const FIREFLY_BASKET_SIZES = ["3.9", "4.1", "4.2", "4.3", "4.9", "5.0", "5.1", "6.0"];
+
+export const FIREFLY_BASKETS: BasketModelRef[] = FIREFLY_BASKET_SIZES.map((size) => ({
+  id: `basket-firefly-${size.replace(".", "-")}`,
+  manufacturer: "Firefly",
+  model: `${size} basket`,
+  newPriceCents: null,
+  note: "Firefly / Balloon Works basket size. No verified price configured yet.",
+}));
+
+export const FIREFLY_BURNERS: BurnerModelRef[] = [
+  { id: "burner-firefly-mirage", manufacturer: "Firefly", model: "Mirage", glow: "any", usedValueCents: null, note: "Firefly / Balloon Works burner. No verified price configured yet." },
+  { id: "burner-firefly-t3", manufacturer: "Firefly", model: "T3", glow: "any", usedValueCents: null, note: "Firefly / Balloon Works burner. No verified price configured yet." },
+];
+
+const addMissing = <T extends { id: string }>(list: T[], extra: T[]) => [...list, ...extra.filter((e) => !list.some((x) => x.id === e.id))];
+
+export const DEFAULTS_UPGRADES: DefaultsUpgrade[] = [
+  {
+    key: "2026-11-firefly-balloon-works",
+    label: "Firefly and Balloon Works treated as one company",
+    apply: (c) => ({
+      ...c,
+      brandPolicies: c.brandPolicies.map((p) =>
+        p.manufacturer.toLowerCase() === "firefly" ? { ...p, aliases: [...new Set([...(p.aliases ?? []), ...FIREFLY_ALIASES])] } : p,
+      ),
+    }),
+  },
+  {
+    key: "2026-11-firefly-equipment",
+    label: "Added Firefly basket sizes and Mirage and T3 burners",
+    apply: (c) => ({ ...c, basketModels: addMissing(c.basketModels, FIREFLY_BASKETS), burnerModels: addMissing(c.burnerModels, FIREFLY_BURNERS) }),
+  },
+];
+
+/** Returns the configuration with any pending built-in updates applied, and the labels of what changed. */
+export function applyDefaultsUpgrades(config: ValuationConfig): { config: ValuationConfig; applied: string[] } {
+  const done = new Set(config.defaultsApplied ?? []);
+  let next = config;
+  const applied: string[] = [];
+  for (const u of DEFAULTS_UPGRADES) {
+    if (done.has(u.key)) continue;
+    next = u.apply(next);
+    done.add(u.key);
+    applied.push(u.label);
+  }
+  return applied.length ? { config: { ...next, defaultsApplied: [...done] }, applied } : { config, applied };
+}
+
 
 const d = (dollars: number) => Math.round(dollars * 100);
 
@@ -60,6 +124,7 @@ export const DEFAULT_CONFIG: ValuationConfig = {
     { id: "basket-cameron-cb", manufacturer: "Cameron", model: "Cameron basket", newPriceCents: null },
     { id: "basket-ultramagic", manufacturer: "Ultramagic", model: "Ultramagic basket", newPriceCents: null },
     { id: "basket-lindstrand", manufacturer: "Lindstrand", model: "Lindstrand basket", newPriceCents: null },
+    ...FIREFLY_BASKETS,
   ],
   burnerModels: [
     {
@@ -93,6 +158,7 @@ export const DEFAULT_CONFIG: ValuationConfig = {
     { id: "burner-ultramagic-mk21-double", manufacturer: "Ultramagic", model: "MK-21 Double", configuration: "double", glow: "any", usedValueCents: null },
     { id: "burner-kubicek-double", manufacturer: "Kubicek", model: "Double", configuration: "double", glow: "any", usedValueCents: null },
     { id: "burner-lindstrand-jetstream-double", manufacturer: "Lindstrand", model: "Jetstream Double", configuration: "double", glow: "any", usedValueCents: null },
+    ...FIREFLY_BURNERS,
   ],
   tankPrices: {
     aluminumCents: d(250),
@@ -123,6 +189,7 @@ export const DEFAULT_CONFIG: ValuationConfig = {
     {
       id: "policy-firefly",
       manufacturer: "Firefly",
+      aliases: FIREFLY_ALIASES,
       kind: "cap",
       maxValueCents: d(7500),
       typicalMinCents: d(4000),
@@ -145,6 +212,7 @@ export const DEFAULT_CONFIG: ValuationConfig = {
   confidenceRanges: { high: 0.08, moderate: 0.15, low: 0.25 },
   minVerifiedComparablesForHigh: 3,
   rounding: { componentCents: d(50), totalCents: d(50), listingCents: d(100) },
+  defaultsApplied: DEFAULTS_UPGRADES.map((u) => u.key),
 };
 
 export const MANUFACTURERS = [

@@ -637,7 +637,8 @@ export function analyzeAsking(
 /* ---------------------------------------------------------------- Main */
 
 function matchingPolicies(manufacturer: string, config: ValuationConfig): BrandPolicy[] {
-  return config.brandPolicies.filter((p) => p.active && norm(p.manufacturer) === norm(manufacturer));
+  const m = norm(manufacturer);
+  return config.brandPolicies.filter((p) => p.active && (norm(p.manufacturer) === m || (p.aliases ?? []).some((a) => norm(a) === m)));
 }
 
 export function valuate(input: ValuationInput, config: ValuationConfig, options: ValuateOptions = {}): ValuationResult {

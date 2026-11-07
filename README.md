@@ -44,7 +44,7 @@ The service-role key is used only on the server. Row-level security lets browser
 
 All valuation math lives in `src/lib/engine/` as pure TypeScript functions. No LLM or paid API is involved.
 
-Order of operations: replacement cost (user quote, racer or special-shape reference, manufacturer table, or interpolated volume table), hours depreciation, age depreciation, envelope condition, fabric, appearance, then basket, burner, tanks and accessories valued independently, market adjustment, resale policies (31 to 35 years capped at $4,900, over 35 years $0, Firefly capped at $7,500, Raven $0), fair market value rounded to $50, selling range by confidence, listing price at +8% rounded to $100 and never above a policy cap, then the asking-price comparison.
+Order of operations: replacement cost (user quote, racer or special-shape reference, manufacturer table, or interpolated volume table), hours depreciation, age depreciation, envelope condition, fabric, appearance, then basket, burner, tanks and accessories valued independently, market adjustment, resale policies (31 to 35 years capped at $4,900, over 35 years $0, Firefly and Balloon Works capped at $7,500, Raven $0), fair market value rounded to $50, selling range by confidence, listing price at +8% rounded to $100 and never above a policy cap, then the asking-price comparison.
 
 Every number is a setting in `src/lib/engine/defaults.ts` and editable in the admin dashboard. Each saved change creates a new immutable version; every report stores the version and date it used, so it can be reproduced exactly.
 

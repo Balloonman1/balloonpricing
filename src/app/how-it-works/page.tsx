@@ -93,7 +93,7 @@ export default async function HowItWorks() {
         <p>
           Complete systems with envelopes {c.agePolicy.capStartAge} to {c.agePolicy.capEndAge} years old are capped at {formatUsd(c.agePolicy.capMaxCents)}. Systems over {c.agePolicy.legacyAfterAge} years
           old have no recommended resale value, and the report suggests gifting or donating them.
-          {firefly?.maxValueCents ? ` Firefly systems are capped at ${formatUsd(firefly.maxValueCents)}.` : ""} Raven systems carry a $0 standard resale recommendation. Hardware that can be reused is
+          {firefly?.maxValueCents ? ` Firefly and Balloon Works systems are capped at ${formatUsd(firefly.maxValueCents)}.` : ""} Raven systems carry a $0 standard resale recommendation. Hardware that can be reused is
           still shown separately.
         </p>
         <p>
