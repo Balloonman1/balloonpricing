@@ -88,6 +88,41 @@ function stepsFor(scope: ValuationScope): StepKey[] {
   return ["balloon", "basket", "burner", "tanks", "accessories", "asking"];
 }
 
+const MIN_VOLUME = 10000;
+const MAX_VOLUME = 2000000;
+
+/** Maps a server validation path to the wizard step, field key and a plain-language message. */
+function describeIssue(path: string): { stepKey: StepKey; field?: string; message: string } {
+  const root = path.split(".")[0];
+  switch (root) {
+    case "volumeCuFt":
+      return { stepKey: "balloon", field: "volumeCuFt", message: "The envelope volume needs to be the full number of cubic feet, for example 90,000." };
+    case "year":
+      return { stepKey: "balloon", field: "year", message: "Check the envelope year of manufacture." };
+    case "hours":
+      return { stepKey: "balloon", field: "hours", message: "Check the total envelope hours." };
+    case "manufacturer":
+    case "model":
+    case "category":
+    case "scope":
+      return { stepKey: "balloon", field: root === "manufacturer" ? "manufacturer" : undefined, message: "Check the balloon details." };
+    case "envelope":
+      return { stepKey: "envelope", message: "One of the envelope details is not valid." };
+    case "basket":
+      return { stepKey: "basket", field: path.includes("year") ? "basketYear" : undefined, message: "One of the basket details is not valid." };
+    case "burner":
+      return { stepKey: "burner", field: path.includes("year") ? "burnerYear" : undefined, message: "One of the burner details is not valid." };
+    case "tanks":
+      return { stepKey: "tanks", message: "One of the tank entries is not valid." };
+    case "accessories":
+      return { stepKey: "accessories", message: "One of the accessory values is not valid." };
+    case "askingPriceCents":
+      return { stepKey: "asking", message: "Check the asking price." };
+    default:
+      return { stepKey: "balloon", message: "Some details need attention." };
+  }
+}
+
 const withEnvelope = (s: ValuationScope) => s === "envelope_only" || s === "complete_system";
 const cond = (c?: ConditionChoice): Condition | undefined => (c && c !== "unknown" ? c : undefined);
 const clean = (s?: string) => (s && s.trim() ? s.trim() : undefined);
@@ -258,29 +293,33 @@ export function Wizard({ editId }: { editId?: string }) {
   const setBasket = (patch: Partial<Draft["basket"]>) => setDraft((d) => ({ ...d, basket: { ...d.basket, ...patch } }));
   const setBurner = (patch: Partial<Draft["burner"]>) => setDraft((d) => ({ ...d, burner: { ...d.burner, ...patch } }));
 
-  function validate(s: StepKey): Record<string, string> {
+  function validate(s: StepKey, d: Draft = draft): Record<string, string> {
     const e: Record<string, string> = {};
     const nowYear = new Date().getFullYear();
     if (s === "balloon") {
-      if (!draft.manufacturer) e.manufacturer = "Choose a manufacturer, or Other.";
-      if (withEnvelope(draft.scope)) {
-        if (!draft.year) e.year = "Enter the envelope year of manufacture.";
-        else if (draft.year < 1950 || draft.year > nowYear) e.year = `Enter a year between 1950 and ${nowYear}.`;
-        if (draft.hours === undefined) e.hours = "Enter total envelope hours. Use your best estimate from the logbook.";
-        else if (draft.hours < 0) e.hours = "Hours cannot be negative.";
-        if ((draft.category === "sport" || draft.category === "commercial") && !draft.volumeCuFt) {
-          e.volumeCuFt = "Enter the envelope volume in cubic feet.";
+      if (!d.manufacturer) e.manufacturer = "Choose a manufacturer, or Other.";
+      if (withEnvelope(d.scope)) {
+        if (!d.year) e.year = "Enter the envelope year of manufacture.";
+        else if (d.year < 1950 || d.year > nowYear) e.year = `Enter a year between 1950 and ${nowYear}.`;
+        if (d.hours === undefined) e.hours = "Enter total envelope hours. Use your best estimate from the logbook.";
+        else if (d.hours < 0) e.hours = "Hours cannot be negative.";
+        else if (d.hours > 20000) e.hours = "Hours look too high. Enter total envelope hours from the logbook.";
+        const vol = d.volumeCuFt;
+        if ((d.category === "sport" || d.category === "commercial") && !vol) {
+          e.volumeCuFt = "Enter the envelope volume in cubic feet, for example 90,000.";
+        } else if (vol !== undefined && (vol < MIN_VOLUME || vol > MAX_VOLUME)) {
+          e.volumeCuFt = `Enter the full volume in cubic feet, between ${MIN_VOLUME.toLocaleString("en-US")} and ${MAX_VOLUME.toLocaleString("en-US")}. For a 90K balloon, enter 90,000.`;
         }
       }
     }
-    if (s === "envelope" && draft.envelope.fabric === "mixed") {
-      const total = (draft.envelope.fabricMix ?? []).reduce((n, x) => n + (x.percent || 0), 0);
+    if (s === "envelope" && d.envelope.fabric === "mixed") {
+      const total = (d.envelope.fabricMix ?? []).reduce((n, x) => n + (x.percent || 0), 0);
       if (total > 100) e.fabricMix = "Fabric percentages add up to more than 100%.";
     }
-    if (s === "basket" && draft.includeBasket && draft.basket.year && (draft.basket.year < 1950 || draft.basket.year > nowYear)) {
+    if (s === "basket" && d.includeBasket && d.basket.year && (d.basket.year < 1950 || d.basket.year > nowYear)) {
       e.basketYear = `Enter a year between 1950 and ${nowYear}.`;
     }
-    if (s === "burner" && draft.includeBurner && draft.burner.year && (draft.burner.year < 1950 || draft.burner.year > nowYear)) {
+    if (s === "burner" && d.includeBurner && d.burner.year && (d.burner.year < 1950 || d.burner.year > nowYear)) {
       e.burnerYear = `Enter a year between 1950 and ${nowYear}.`;
     }
     return e;
@@ -296,7 +335,13 @@ export function Wizard({ editId }: { editId?: string }) {
   }
 
   function next() {
-    const e = validate(step);
+    // Shorthand: "90" means 90,000 cu ft, the way pilots name envelope sizes.
+    let current = draft;
+    if (step === "balloon" && draft.volumeCuFt !== undefined && draft.volumeCuFt >= 10 && draft.volumeCuFt < 1000) {
+      current = { ...draft, volumeCuFt: Math.round(draft.volumeCuFt * 1000) };
+      setDraft(current);
+    }
+    const e = validate(step, current);
     setErrors(e);
     if (Object.keys(e).length) return;
     if (isLast) void submit();
@@ -316,8 +361,19 @@ export function Wizard({ editId }: { editId?: string }) {
       });
       const body = await res.json();
       if (!res.ok) {
-        const issue = body.issues?.[0];
-        setServerError(issue ? `${issue.message}${issue.path ? ` (${issue.path})` : ""}` : body.error ?? "The valuation could not be calculated.");
+        const issue: { path?: string; message?: string } | undefined = body.issues?.[0];
+        if (issue?.path) {
+          // Send the person back to the step that holds the problem field.
+          const { stepKey, field, message } = describeIssue(issue.path);
+          const target = steps.indexOf(stepKey);
+          if (target >= 0) {
+            go(target);
+            requestAnimationFrame(() => setErrors(field ? { [field]: message } : {}));
+          }
+          setServerError(`${message} Fix it on the ${STEP_LABEL[stepKey].toLowerCase()} step, then calculate again.`);
+        } else {
+          setServerError(body.error ?? "The valuation could not be calculated. Check the details and try again.");
+        }
         return;
       }
       const v = body.valuation;
@@ -520,7 +576,7 @@ export function Wizard({ editId }: { editId?: string }) {
                         htmlFor="volume"
                         error={errors.volumeCuFt}
                         optional={draft.category === "racer" || draft.category === "special_shape"}
-                        hint="Actual cubic feet"
+                        hint="Full cubic feet, e.g. 90,000. Typing 90 is read as 90,000."
                       >
                         <NumberInput id="volume" value={draft.volumeCuFt} onValue={(v) => set("volumeCuFt", v)} suffix="cu ft" invalid={Boolean(errors.volumeCuFt)} />
                       </Field>
